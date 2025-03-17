@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoW Classic Devilsaur Spawn Timer</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <style>
+        .map-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .map-container img {
+            width: 100%;
+            height: auto;
+        }
+
+        .spawn-button {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffd100;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .spawn-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .spawn-button.active {
+            background: rgba(255, 0, 0, 0.7);
+            border-color: #ff0000;
+        }
+
+        .spawn-button .location {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .spawn-button .timer {
+            font-size: 0.9em;
+        }
+
+        /* Position the spawn buttons */
+        #nw-spawn {
+            top: 15%;
+            left: 20%;
+        }
+
+        #ne-spawn {
+            top: 8%;
+            right: 30%;
+        }
+
+        #e-spawn {
+            top: 35%;
+            right: 10%;
+        }
+
+        #w-spawn {
+            top: 35%;
+            left: 15%;
+        }
+
+        #mid-spawn {
+            bottom: 15%;
+            left: 55%;
+        }
+
+        #s-spawn {
+            bottom: 15%;
+            left: 25%;
+        }
+
+        @media (max-width: 768px) {
+            .spawn-button {
+                padding: 4px 8px;
+                min-width: 60px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Devilsaur Spawn Timer</h1>
+
+        <div class="map-container position-relative">
+            <img src="DevilsaurSpawnsClassicWoW.jpg" alt="Un'Goro Crater Map With Devilsaur Spawns" class="img-fluid">
+
+            <button class="spawn-button" id="nw-spawn" data-location="NW">
+                <span class="location">NW</span>
+                <span class="timer">Not seen</span>
+            </button>
+
+            <button class="spawn-button" id="ne-spawn" data-location="NE">
+                <span class="location">NE</span>
+                <span class="timer">Not seen</span>
+            </button>
+
+            <button class="spawn-button" id="e-spawn" data-location="E">
+                <span class="location">E</span>
+                <span class="timer">Not seen</span>
+            </button>
+
+            <button class="spawn-button" id="w-spawn" data-location="W">
+                <span class="location">W</span>
+                <span class="timer">Not seen</span>
+            </button>
+
+            <button class="spawn-button" id="mid-spawn" data-location="Mid">
+                <span class="location">Mid</span>
+                <span class="timer">Not seen</span>
+            </button>
+
+            <button class="spawn-button" id="s-spawn" data-location="S">
+                <span class="location">S</span>
+                <span class="timer">Not seen</span>
+            </button>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-danger" id="reset-all">Reset All Timers</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class SpawnTimer {
+            constructor() {
+                this.spawnTime = 20 * 60; // 20 minutes in seconds
+                this.timers = {};
+                this.initializeButtons();
+            }
+
+            initializeButtons() {
+                const buttons = document.querySelectorAll('.spawn-button');
+                const resetAllButton = document.getElementById('reset-all');
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => this.toggleTimer(button));
+                });
+
+                resetAllButton.addEventListener('click', () => this.resetAllTimers());
+            }
+
+            toggleTimer(button) {
+                const location = button.dataset.location;
+
+                if (this.timers[location]) {
+                    // If timer exists, reset it
+                    clearInterval(this.timers[location].interval);
+                    delete this.timers[location];
+                    button.classList.remove('active');
+                    this.updateButtonDisplay(button, 'Not seen');
+                } else {
+                    // Start new timer
+                    const endTime = Date.now() + (this.spawnTime * 1000);
+                    button.classList.add('active');
+
+                    this.timers[location] = {
+                        endTime: endTime,
+                        interval: setInterval(() => this.updateTimer(button, location), 1000)
+                    };
+
+                    this.updateTimer(button, location);
+                }
+            }
+
+            updateTimer(button, location) {
+                const timer = this.timers[location];
+                if (!timer) return;
+
+                const timeLeft = Math.max(0, Math.ceil((timer.endTime - Date.now()) / 1000));
+
+                if (timeLeft === 0) {
+                    clearInterval(timer.interval);
+                    delete this.timers[location];
+                    button.classList.remove('active');
+                    this.updateButtonDisplay(button, 'Ready');
+                    this.playNotification();
+                    return;
+                }
+
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                this.updateButtonDisplay(button, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+            }
+
+            updateButtonDisplay(button, text) {
+                const timerSpan = button.querySelector('.timer');
+                timerSpan.textContent = text;
+            }
+
+            resetAllTimers() {
+                Object.keys(this.timers).forEach(location => {
+                    const button = document.querySelector(`[data-location="${location}"]`);
+                    clearInterval(this.timers[location].interval);
+                    button.classList.remove('active');
+                    this.updateButtonDisplay(button, 'Not seen');
+                });
+                this.timers = {};
+            }
+
+            playNotification() {
+                // Create a simple beep sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440;
+                gainNode.gain.value = 0.5;
+
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 200);
+            }
+        }
+
+        // Initialize the timer when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SpawnTimer();
+        });
+    </script>
+</body>
+</html>
+

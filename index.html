@@ -1,240 +1,382 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WoW Classic Devilsaur Spawn Timer</title>
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    <style>
-        .map-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .map-container img {
-            width: 100%;
-            height: auto;
-        }
-
-        .spawn-button {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffd100;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 80px;
-            transition: all 0.3s ease;
-        }
-
-        .spawn-button:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.1);
-        }
-
-        .spawn-button.active {
-            background: rgba(255, 0, 0, 0.7);
-            border-color: #ff0000;
-        }
-
-        .spawn-button .location {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .spawn-button .timer {
-            font-size: 0.9em;
-        }
-
-        /* Position the spawn buttons */
-        #nw-spawn {
-            top: 15%;
-            left: 20%;
-        }
-
-        #ne-spawn {
-            top: 8%;
-            right: 30%;
-        }
-
-        #e-spawn {
-            top: 35%;
-            right: 10%;
-        }
-
-        #w-spawn {
-            top: 35%;
-            left: 15%;
-        }
-
-        #mid-spawn {
-            bottom: 15%;
-            left: 55%;
-        }
-
-        #s-spawn {
-            bottom: 15%;
-            left: 25%;
-        }
-
-        @media (max-width: 768px) {
-            .spawn-button {
-                padding: 4px 8px;
-                min-width: 60px;
-                font-size: 0.8em;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WoW Classic Devilsaur Spawn Timer</title>
+  <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+  <style>
+    .map-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .map-container img {
+      width: 100%;
+      height: auto;
+    }
+    .spawn-button {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #ffd100; /* Yellow for 'Not seen' */
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+      transition: all 0.3s ease;
+    }
+    .spawn-button:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: scale(1.1);
+    }
+    /* Active countdown timer: red border/background */
+    .spawn-button.active {
+      background: rgba(255, 0, 0, 0.7);
+      border-color: #ff0000;
+    }
+    /* Ready state: green border/background */
+    .spawn-button.ready {
+      border-color: green;
+      background: rgba(0, 128, 0, 0.7);
+    }
+    .spawn-button .location {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .spawn-button .timer {
+      font-size: 0.9em;
+    }
+    /* Position the spawn buttons */
+    #nw-spawn { top: 4%; left: 23%; }
+    #ne-spawn { top: 8%; right: 30%; }
+    #e-spawn  { top: 25%; right: 7%; }
+    #w-spawn  { top: 25%; left: 12%; }
+    #mid-spawn{ bottom: 13%; left: 55%; }
+    #s-spawn  { bottom: 15%; left: 27%; }
+    @media (max-width: 768px) {
+      .spawn-button {
+        padding: 4px 8px;
+        min-width: 60px;
+        font-size: 0.8em;
+      }
+    }
+    /* Settings styles */
+    .settings {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .settings label {
+      margin: 0 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container py-4">
-        <h1 class="text-center mb-4">Devilsaur Spawn Timer</h1>
-
-        <div class="map-container position-relative">
-            <img src="dsaurmap.png" alt="Un'Goro Crater Map" class="img-fluid">
-
-            <button class="spawn-button" id="nw-spawn" data-location="NW">
-                <span class="location">NW</span>
-                <span class="timer">Not seen</span>
-            </button>
-
-            <button class="spawn-button" id="ne-spawn" data-location="NE">
-                <span class="location">NE</span>
-                <span class="timer">Not seen</span>
-            </button>
-
-            <button class="spawn-button" id="e-spawn" data-location="E">
-                <span class="location">E</span>
-                <span class="timer">Not seen</span>
-            </button>
-
-            <button class="spawn-button" id="w-spawn" data-location="W">
-                <span class="location">W</span>
-                <span class="timer">Not seen</span>
-            </button>
-
-            <button class="spawn-button" id="mid-spawn" data-location="Mid">
-                <span class="location">Mid</span>
-                <span class="timer">Not seen</span>
-            </button>
-
-            <button class="spawn-button" id="s-spawn" data-location="S">
-                <span class="location">S</span>
-                <span class="timer">Not seen</span>
-            </button>
-        </div>
-
-        <div class="text-center mt-4">
-            <button class="btn btn-danger" id="reset-all">Reset All Timers</button>
-        </div>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">Devilsaur Spawn Timer</h1>
+    
+    <!-- Settings Section -->
+    <div class="settings">
+      <label for="volumeControl">Volume:</label>
+      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+      
+      <label for="muteSwitch">Mute:</label>
+      <input type="checkbox" id="muteSwitch">
+      
+      <br><br>
+      
+      <label for="timerDuration">Timer Duration (minutes):</label>
+      <input type="range" id="timerDuration" min="12" max="22" step="1" value="18">
+      <span id="timerDurationDisplay">18</span> minutes
+    </div>
+    
+    <div class="map-container position-relative">
+      <img src="DevilsaurSpawnsClassicWoW.jpg" alt="Un'Goro Crater Map With Devilsaur Spawns" class="img-fluid">
+      
+      <button class="spawn-button" id="nw-spawn" data-location="NW">
+        <span class="location">NW</span>
+        <span class="timer">Not seen</span>
+      </button>
+      <button class="spawn-button" id="ne-spawn" data-location="NE">
+        <span class="location">NE</span>
+        <span class="timer">Not seen</span>
+      </button>
+      <button class="spawn-button" id="e-spawn" data-location="E">
+        <span class="location">E</span>
+        <span class="timer">Not seen</span>
+      </button>
+      <button class="spawn-button" id="w-spawn" data-location="W">
+        <span class="location">W</span>
+        <span class="timer">Not seen</span>
+      </button>
+      <button class="spawn-button" id="mid-spawn" data-location="Mid">
+        <span class="location">Mid</span>
+        <span class="timer">Not seen</span>
+      </button>
+      <button class="spawn-button" id="s-spawn" data-location="S">
+        <span class="location">S</span>
+        <span class="timer">Not seen</span>
+      </button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        class SpawnTimer {
-            constructor() {
-                this.spawnTime = 20 * 60; // 20 minutes in seconds
-                this.timers = {};
-                this.initializeButtons();
-            }
+    <div class="text-center mt-4">
+        If you found this useful, please send gold tips to <b style="color: #31afd8;">Pelemeows-dreamscythe</b> or <b style="color: #31afd8;">Pelemeows-doomhowl</b>. Also send feedback via mail. Thank you!
+    </div>
+    
+    <div class="text-center mt-4">
+      <button class="btn btn-danger" id="reset-all">Reset All Timers</button>
+    </div>
 
-            initializeButtons() {
-                const buttons = document.querySelectorAll('.spawn-button');
-                const resetAllButton = document.getElementById('reset-all');
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    class SpawnTimer {
+      constructor() {
+        // Default duration (in minutes) if not set is 18.
+        this.defaultDurationMinutes = 18;
+        this.timers = {}; // Active timers will be stored here.
+        
+        // Map each button's data-location to an audio file prefix.
+        this.audioPrefixes = {
+          "NW":  "NorthWest",
+          "NE":  "NorthEast",
+          "E":   "East",
+          "W":   "West",
+          "Mid": "Mid",
+          "S":   "South"
+        };
 
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => this.toggleTimer(button));
-                });
+        this.initializeSettings();
+        this.initializeButtons();
+        this.loadSettings();
+        this.loadTimers();
+      }
 
-                resetAllButton.addEventListener('click', () => this.resetAllTimers());
-            }
+      // Save volume, mute, and timer duration settings to localStorage.
+      saveSettings() {
+        const volumeControl = document.getElementById('volumeControl');
+        const muteSwitch = document.getElementById('muteSwitch');
+        const timerDuration = document.getElementById('timerDuration');
+        localStorage.setItem('spawnTimerVolume', volumeControl.value);
+        localStorage.setItem('spawnTimerMute', muteSwitch.checked ? "true" : "false");
+        localStorage.setItem('spawnTimerDuration', timerDuration.value);
+      }
 
-            toggleTimer(button) {
-                const location = button.dataset.location;
+      // Load settings from localStorage and update controls.
+      loadSettings() {
+        const volume = localStorage.getItem('spawnTimerVolume');
+        const mute = localStorage.getItem('spawnTimerMute');
+        const duration = localStorage.getItem('spawnTimerDuration');
 
-                if (this.timers[location]) {
-                    // If timer exists, reset it
-                    clearInterval(this.timers[location].interval);
-                    delete this.timers[location];
-                    button.classList.remove('active');
-                    this.updateButtonDisplay(button, 'Not seen');
-                } else {
-                    // Start new timer
-                    const endTime = Date.now() + (this.spawnTime * 1000);
-                    button.classList.add('active');
-
-                    this.timers[location] = {
-                        endTime: endTime,
-                        interval: setInterval(() => this.updateTimer(button, location), 1000)
-                    };
-
-                    this.updateTimer(button, location);
-                }
-            }
-
-            updateTimer(button, location) {
-                const timer = this.timers[location];
-                if (!timer) return;
-
-                const timeLeft = Math.max(0, Math.ceil((timer.endTime - Date.now()) / 1000));
-
-                if (timeLeft === 0) {
-                    clearInterval(timer.interval);
-                    delete this.timers[location];
-                    button.classList.remove('active');
-                    this.updateButtonDisplay(button, 'Ready');
-                    this.playNotification();
-                    return;
-                }
-
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                this.updateButtonDisplay(button, `${minutes}:${seconds.toString().padStart(2, '0')}`);
-            }
-
-            updateButtonDisplay(button, text) {
-                const timerSpan = button.querySelector('.timer');
-                timerSpan.textContent = text;
-            }
-
-            resetAllTimers() {
-                Object.keys(this.timers).forEach(location => {
-                    const button = document.querySelector(`[data-location="${location}"]`);
-                    clearInterval(this.timers[location].interval);
-                    button.classList.remove('active');
-                    this.updateButtonDisplay(button, 'Not seen');
-                });
-                this.timers = {};
-            }
-
-            playNotification() {
-                // Create a simple beep sound using Web Audio API
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                oscillator.type = 'sine';
-                oscillator.frequency.value = 440;
-                gainNode.gain.value = 0.5;
-
-                oscillator.start();
-                setTimeout(() => oscillator.stop(), 200);
-            }
+        if (volume !== null) {
+          document.getElementById('volumeControl').value = volume;
         }
+        if (mute !== null) {
+          document.getElementById('muteSwitch').checked = (mute === "true");
+        }
+        if (duration !== null) {
+          document.getElementById('timerDuration').value = duration;
+          document.getElementById('timerDurationDisplay').textContent = duration;
+        }
+      }
 
-        // Initialize the timer when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new SpawnTimer();
+      // Save the active timers (excluding interval IDs) to localStorage.
+      saveTimers() {
+        const timersState = {};
+        for (const location in this.timers) {
+          const timer = this.timers[location];
+          timersState[location] = {
+            endTime: timer.endTime,
+            notified60: timer.notified60,
+            spawnTime: timer.spawnTime || null
+          };
+        }
+        localStorage.setItem('spawnTimers', JSON.stringify(timersState));
+      }
+
+      // Load timers from localStorage and reinitialize them.
+      loadTimers() {
+        const saved = localStorage.getItem('spawnTimers');
+        if (!saved) return;
+        const timersState = JSON.parse(saved);
+        for (const location in timersState) {
+          const state = timersState[location];
+          const button = document.querySelector(`[data-location="${location}"]`);
+          if (!button) continue;
+          
+          // If spawnTime exists, the timer had already ended.
+          if (state.spawnTime) {
+            button.classList.add('ready');
+            this.updateButtonDisplay(button, 'Ready');
+            this.timers[location] = {
+              spawnTime: state.spawnTime,
+              notified60: true
+            };
+            this.timers[location].countUpInterval = setInterval(() => {
+              this.updateCountUpTimer(button, state.spawnTime);
+            }, 1000);
+          } else if (state.endTime > Date.now()) {
+            // Timer is still counting down.
+            button.classList.add('active');
+            this.timers[location] = {
+              endTime: state.endTime,
+              notified60: state.notified60
+            };
+            this.timers[location].interval = setInterval(() => {
+              this.updateTimer(button, location);
+            }, 1000);
+            this.updateTimer(button, location);
+          } else {
+            // If the saved countdown is expired but spawnTime wasn’t saved, treat as ended.
+            button.classList.add('ready');
+            this.updateButtonDisplay(button, 'Ready');
+            this.timers[location] = {
+              spawnTime: Date.now(),
+              notified60: true
+            };
+            this.timers[location].countUpInterval = setInterval(() => {
+              this.updateCountUpTimer(button, this.timers[location].spawnTime);
+            }, 1000);
+          }
+        }
+      }
+
+      initializeSettings() {
+        // Update timer duration display and save settings when slider changes.
+        const timerDurationSlider = document.getElementById('timerDuration');
+        const timerDurationDisplay = document.getElementById('timerDurationDisplay');
+        timerDurationSlider.addEventListener('input', () => {
+          timerDurationDisplay.textContent = timerDurationSlider.value;
+          this.saveSettings();
         });
-    </script>
+        
+        // Save volume and mute settings on change.
+        document.getElementById('volumeControl').addEventListener('input', () => {
+          this.saveSettings();
+        });
+        document.getElementById('muteSwitch').addEventListener('change', () => {
+          this.saveSettings();
+        });
+      }
+
+      initializeButtons() {
+        const buttons = document.querySelectorAll('.spawn-button');
+        const resetAllButton = document.getElementById('reset-all');
+        buttons.forEach(button => {
+          button.addEventListener('click', () => this.toggleTimer(button));
+        });
+        resetAllButton.addEventListener('click', () => this.resetAllTimers());
+      }
+
+      toggleTimer(button) {
+        const location = button.dataset.location;
+        // If a timer is running, reset it.
+        if (this.timers[location]) {
+          clearInterval(this.timers[location].interval);
+          if (this.timers[location].countUpInterval) {
+            clearInterval(this.timers[location].countUpInterval);
+          }
+          delete this.timers[location];
+          button.classList.remove('active', 'ready');
+          this.updateButtonDisplay(button, 'Not seen');
+          this.saveTimers();
+        } else {
+          // Get timer duration from the slider (in minutes).
+          const timerDuration = parseInt(document.getElementById('timerDuration').value, 10) || this.defaultDurationMinutes;
+          const spawnTimeSeconds = timerDuration * 60;
+          const endTime = Date.now() + (spawnTimeSeconds * 1000);
+          button.classList.remove('ready');
+          button.classList.add('active');
+          this.timers[location] = {
+            endTime: endTime,
+            notified60: false
+          };
+          this.timers[location].interval = setInterval(() => this.updateTimer(button, location), 1000);
+          this.updateTimer(button, location);
+          this.saveTimers();
+        }
+      }
+
+      updateTimer(button, location) {
+        const timer = this.timers[location];
+        if (!timer) return;
+        const timeLeft = Math.max(0, Math.ceil((timer.endTime - Date.now()) / 1000));
+        
+        // At 60 seconds remaining, play "Soon" audio if not already played.
+        if (timeLeft === 60 && !timer.notified60) {
+          timer.notified60 = true;
+          this.playAudio(location, 'Soon');
+        }
+        // When time is up, clear countdown, mark as ready, play "Ready" audio, and start count-up.
+        if (timeLeft === 0) {
+          clearInterval(timer.interval);
+          button.classList.remove('active');
+          button.classList.add('ready');
+          this.updateButtonDisplay(button, 'Ready');
+          this.playAudio(location, 'Ready');
+          timer.spawnTime = Date.now();
+          timer.countUpInterval = setInterval(() => this.updateCountUpTimer(button, timer.spawnTime), 1000);
+          this.saveTimers();
+          return;
+        }
+        // Otherwise, update display with countdown in MM:SS.
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        this.updateButtonDisplay(button, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+        this.saveTimers();
+      }
+
+      updateCountUpTimer(button, spawnTime) {
+        const elapsedSeconds = Math.floor((Date.now() - spawnTime) / 1000);
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = elapsedSeconds % 60;
+        this.updateButtonDisplay(button, `+${minutes}:${seconds.toString().padStart(2, '0')}`);
+      }
+
+      updateButtonDisplay(button, text) {
+        const timerSpan = button.querySelector('.timer');
+        timerSpan.textContent = text;
+      }
+
+      resetAllTimers() {
+        Object.keys(this.timers).forEach(location => {
+          const button = document.querySelector(`[data-location="${location}"]`);
+          clearInterval(this.timers[location].interval);
+          if (this.timers[location].countUpInterval) {
+            clearInterval(this.timers[location].countUpInterval);
+          }
+          button.classList.remove('active', 'ready');
+          this.updateButtonDisplay(button, 'Not seen');
+        });
+        this.timers = {};
+        localStorage.removeItem('spawnTimers');
+      }
+
+      playAudio(location, status) {
+        // 'status' is either 'Soon' or 'Ready'.
+        const prefix = this.audioPrefixes[location];
+        if (!prefix) return;
+        const audioPath = `voice/${prefix}${status}.mp3`;
+        const audio = new Audio(audioPath);
+        // Set volume according to the volume slider and mute switch.
+        const muteSwitch = document.getElementById('muteSwitch');
+        if (muteSwitch.checked) {
+          audio.volume = 0;
+        } else {
+          const volumeControl = document.getElementById('volumeControl');
+          audio.volume = parseFloat(volumeControl.value);
+        }
+        audio.play().catch(err => console.error('Audio playback failed:', err));
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      new SpawnTimer();
+    });
+  </script>
 </body>
 </html>
-
